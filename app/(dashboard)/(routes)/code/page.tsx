@@ -3,12 +3,13 @@
 import axios from "axios";
 import * as z from "zod";
 
-import { MessageSquare } from "lucide-react";
+import { Code } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChatCompletionMessage } from "openai/resources/chat";
 import { useState } from "react";
 import { formSchema } from "./constants";
+import ReactMarkdown from "react-markdown";
 
 import Heading from "@/components/heading";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 
-const QuestionPage = () => {
+const CodePage = () => {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatCompletionMessage[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,7 +44,7 @@ const QuestionPage = () => {
 
         const newMessages = [...messages, userMessage];
 
-        const response = await axios.post("/api/question", {
+        const response = await axios.post("/api/code", {
           messages: newMessages,
         });
 
@@ -62,11 +63,11 @@ const QuestionPage = () => {
   return (
     <div>
       <Heading
-        title="Tạo câu hỏi"
-        description="Bộ trả lời câu hỏi thông minh"
-        icon={MessageSquare}
-        iconColor="text-violet-500"
-        bgColor="bg-violet-500/10"
+        title="Tạo mã code"
+        description="Khởi tạo các đoạn mã"
+        icon={Code}
+        iconColor="text-green-500"
+        bgColor="bg-violet-700/10"
       />
       <div className="px-4 lg:px-8">
         <div>
@@ -94,7 +95,7 @@ const QuestionPage = () => {
                       <Input
                         className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                         disabled={isLoading}
-                        placeholder="Làm sao để tôi không đi học vẫn có điểm?"
+                        placeholder="Viết một đoạn mã kết nối đến API sử dụng axios..."
                         {...field}
                       />
                     </FormControl>
@@ -131,7 +132,21 @@ const QuestionPage = () => {
                 )}
               >
                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                <p className="text-sm"> {message.content}</p>
+                <ReactMarkdown
+                  components={{
+                    pre: ({ node, ...props }) => (
+                      <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
+                        <pre {...props} />
+                      </div>
+                    ),
+                    code: ({ node, ...props }) => (
+                      <code className="bg-black/10 rounded-lg p-1" {...props} />
+                    ),
+                  }}
+                  className="text-sm overflow-hidden leading-7"
+                >
+                  {message.content || ""}
+                </ReactMarkdown>
               </div>
             ))}
           </div>
@@ -141,4 +156,4 @@ const QuestionPage = () => {
   );
 };
 
-export default QuestionPage;
+export default CodePage;
